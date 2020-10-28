@@ -1,0 +1,8 @@
+name: ModularCore
+version: 1.0.0
+main: me.jishunamatata.modularcore.ModularCore
+api-version: 1.16
+
+commands:
+  modularcore:
+    aliases: [mcore]
