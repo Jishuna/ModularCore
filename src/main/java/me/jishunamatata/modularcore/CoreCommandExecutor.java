@@ -18,7 +18,8 @@ public class CoreCommandExecutor implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String alias, String[] args) {
-		sender.sendMessage(ChatColor.GREEN + "-================= Modules =================-");
+		sender.sendMessage(ChatColor.GREEN + "-================= " + ChatColor.GOLD + ChatColor.BOLD + "Modules"
+				+ ChatColor.GREEN + " =================-");
 
 		for (IModularPlugin modularPlugin : this.plugin.getModules()) {
 			JavaPlugin javaPlugin = (JavaPlugin) modularPlugin;
@@ -33,9 +34,11 @@ public class CoreCommandExecutor implements CommandExecutor {
 
 			if (invalidCore) {
 				sender.sendMessage("");
-				sender.sendMessage(String.format(
-						"%1$sModule %2$s%3$s %1$sexpects core version %2$s%4$s %1$s(You have %2$s%5$s%1$s). It may not work correctly.",
-						ChatColor.RED.toString(), ChatColor.GOLD.toString(), description.getName(),
+
+				sender.sendMessage(String.format("%1$sModule %2$s%3$s %1$sexpects core version",
+						ChatColor.RED.toString(), ChatColor.GOLD.toString(), description.getName()));
+				sender.sendMessage(String.format("%2$s%3$s %1$s(You have %2$s%4$s%1$s). It may not work correctly.",
+						ChatColor.RED.toString(), ChatColor.GOLD.toString(),
 						modularPlugin.getMinCoreVersion().toString(), ModularCore.getCurrentVersion().toString()));
 			}
 			sender.sendMessage(ChatColor.GREEN + "-===========================================-");
