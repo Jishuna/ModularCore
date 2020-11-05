@@ -13,17 +13,28 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import me.jishunamatata.modularcore.commands.CoreCommandExecutor;
+import me.jishunamatata.modularcore.database.DatabaseManager;
+import me.jishunamatata.modularcore.utils.ModularPlugin;
+import me.jishunamatata.modularcore.utils.SimpleSemVersion;
+
 public class ModularCore extends JavaPlugin {
 
 	private static ModularCore plugin;
 
+	private final DatabaseManager databaseManager = new DatabaseManager();
+
 	private static final SimpleSemVersion CURRENT_VERSION = SimpleSemVersion.fromString("1.0.0");
-	private final List<IModularPlugin> MODULES = new ArrayList<>();
+	private final List<ModularPlugin> MODULES = new ArrayList<>();
+
+	public void onLoad() {
+		loadModules();
+	}
 
 	public void onEnable() {
 		plugin = this;
 
-		loadModules();
+		enableModules();
 		getCommand("modularcore").setExecutor(new CoreCommandExecutor(this));
 	}
 
@@ -38,13 +49,12 @@ public class ModularCore extends JavaPlugin {
 			try {
 				Plugin plugin = pluginManager.loadPlugin(file);
 
-				if (plugin instanceof IModularPlugin) {
+				if (plugin instanceof ModularPlugin) {
 					PluginDescriptionFile description = plugin.getDescription();
 					getLogger().info(String.format("Loading ModularPlugin \"%s\". Version: %s", description.getName(),
 							description.getVersion()));
 
-					pluginManager.enablePlugin(plugin);
-					this.MODULES.add((IModularPlugin) plugin);
+					this.MODULES.add((ModularPlugin) plugin);
 				} else {
 					getLogger().warning("Found a valid plugin: " + plugin.getName()
 							+ " but it is not a valid module, it should be placed in your regular plugin folder.");
@@ -57,6 +67,16 @@ public class ModularCore extends JavaPlugin {
 		}
 	}
 
+	private void enableModules() {
+		this.MODULES.forEach((module) -> Bukkit.getPluginManager().enablePlugin(module));
+
+		for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+			if (plugin instanceof ModularPlugin) {
+				this.MODULES.add((ModularPlugin) plugin);
+			}
+		}
+	}
+
 	public static ModularCore getInstance() {
 		return plugin;
 	}
@@ -65,8 +85,12 @@ public class ModularCore extends JavaPlugin {
 		return CURRENT_VERSION;
 	}
 
-	public List<IModularPlugin> getModules() {
+	public List<ModularPlugin> getModules() {
 		return this.MODULES;
+	}
+
+	public DatabaseManager getDatabaseManager() {
+		return databaseManager;
 	}
 
 }

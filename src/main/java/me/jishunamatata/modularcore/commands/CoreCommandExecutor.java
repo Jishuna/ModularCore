@@ -1,4 +1,4 @@
-package me.jishunamatata.modularcore;
+package me.jishunamatata.modularcore.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -6,6 +6,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import me.jishunamatata.modularcore.ModularCore;
+import me.jishunamatata.modularcore.utils.ModularPlugin;
 import net.md_5.bungee.api.ChatColor;
 
 public class CoreCommandExecutor implements CommandExecutor {
@@ -21,7 +23,7 @@ public class CoreCommandExecutor implements CommandExecutor {
 		sender.sendMessage(ChatColor.GREEN + "-================= " + ChatColor.GOLD + ChatColor.BOLD + "Modules"
 				+ ChatColor.GREEN + " =================-");
 
-		for (IModularPlugin modularPlugin : this.plugin.getModules()) {
+		for (ModularPlugin modularPlugin : this.plugin.getModules()) {
 			JavaPlugin javaPlugin = (JavaPlugin) modularPlugin;
 			PluginDescriptionFile description = javaPlugin.getDescription();
 

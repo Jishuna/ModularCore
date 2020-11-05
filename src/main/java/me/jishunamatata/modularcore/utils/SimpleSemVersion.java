@@ -1,4 +1,4 @@
-package me.jishunamatata.modularcore;
+package me.jishunamatata.modularcore.utils;
 
 public class SimpleSemVersion {
 
