@@ -36,6 +36,14 @@ public class ModularCore extends JavaPlugin {
 
 		enableModules();
 		getCommand("modularcore").setExecutor(new CoreCommandExecutor(this));
+		
+		String stmt = "CREATE TABLE IF NOT EXISTS `players` ("
+				+ "  `player_id` int PRIMARY KEY NOT NULL,"
+				+ "  `uuid` char(36) UNIQUE NOT NULL,"
+				+ "  `last_username` varchar(16) DEFAULT NULL"
+				+ ")";
+		
+		DatabaseManager.executeUpdate(this, stmt, DatabaseManager.getCoreConnection(), true);
 	}
 
 	private void loadModules() {
