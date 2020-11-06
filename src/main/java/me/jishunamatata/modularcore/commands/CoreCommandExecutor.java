@@ -4,7 +4,6 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import me.jishunamatata.modularcore.ModularCore;
 import me.jishunamatata.modularcore.utils.ModularPlugin;
@@ -24,8 +23,7 @@ public class CoreCommandExecutor implements CommandExecutor {
 				+ ChatColor.GREEN + " =================-");
 
 		for (ModularPlugin modularPlugin : this.plugin.getModules()) {
-			JavaPlugin javaPlugin = (JavaPlugin) modularPlugin;
-			PluginDescriptionFile description = javaPlugin.getDescription();
+			PluginDescriptionFile description = modularPlugin.getDescription();
 
 			boolean invalidCore = modularPlugin.getMinCoreVersion().isNewerThan(ModularCore.getCurrentVersion());
 

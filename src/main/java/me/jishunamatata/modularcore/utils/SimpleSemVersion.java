@@ -2,7 +2,9 @@ package me.jishunamatata.modularcore.utils;
 
 public class SimpleSemVersion {
 
-	private int major, minor, patch;
+	private int major;
+	private int minor;
+	private int patch;
 
 	public SimpleSemVersion(int major, int minor, int patch) {
 		this.major = major;

@@ -24,7 +24,7 @@ public class User {
 	}
 
 	public void save() {
-		pendingUpdates.values().forEach((pending) -> pending.execute());
+		pendingUpdates.values().forEach(AbstractPendingUpdate::execute);
 		pendingUpdates.clear();
 	}
 

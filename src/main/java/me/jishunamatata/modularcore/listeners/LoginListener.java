@@ -2,11 +2,10 @@ package me.jishunamatata.modularcore.listeners;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-
-import javax.sql.rowset.CachedRowSet;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -29,7 +28,7 @@ public class LoginListener implements Listener {
 
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
-		CompletableFuture.supplyAsync(() -> loadFromDatabase(event.getPlayer())).thenAccept((user) -> {
+		CompletableFuture.supplyAsync(() -> loadFromDatabase(event.getPlayer())).thenAccept(user -> {
 			if (user != null) {
 				Bukkit.getPluginManager().callEvent(new UserLoadedEvent(user));
 			}
@@ -47,7 +46,7 @@ public class LoginListener implements Listener {
 			DatabaseManager.executeUpdate(statement, id.toString(), player.getName());
 
 			statement = connection.prepareStatement("SELECT * FROM players WHERE uuid=?;");
-			CachedRowSet result = DatabaseManager.executeQuery(statement, id.toString());
+			ResultSet result = DatabaseManager.executeQuery(statement, id.toString());
 
 			if (result.next()) {
 				return new User(result.getInt("player_id"), id);

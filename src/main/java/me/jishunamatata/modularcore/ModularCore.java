@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.InvalidDescriptionException;
@@ -30,30 +31,29 @@ public class ModularCore extends JavaPlugin {
 	private final DatabaseManager databaseManager = new DatabaseManager();
 
 	private static final SimpleSemVersion CURRENT_VERSION = SimpleSemVersion.fromString("1.0.0");
-	private final List<ModularPlugin> MODULES = new ArrayList<>();
-	
+	private final List<ModularPlugin> modules = new ArrayList<>();
+
 	private final DatabaseConnectionPool corePool = new DatabaseConnectionPool("CoreData");
 
+	@Override
 	public void onLoad() {
 		loadModules();
 	}
 
+	@Override
 	public void onEnable() {
 		plugin = this;
-		
+
 		PluginManager pluginManager = Bukkit.getPluginManager();
 		pluginManager.registerEvents(new LoginListener(corePool), this);
 
 		getCommand("modularcore").setExecutor(new CoreCommandExecutor(this));
-		
+
 		enableModules();
-		
-		String stmt = "CREATE TABLE IF NOT EXISTS `players` ("
-				+ "  `player_id` INTEGER PRIMARY KEY,"
-				+ "  `uuid` char(36) UNIQUE NOT NULL,"
-				+ "  `last_username` varchar(16) DEFAULT NULL"
-				+ ")";
-		
+
+		String stmt = "CREATE TABLE IF NOT EXISTS `players` (" + "  `player_id` INTEGER PRIMARY KEY,"
+				+ "  `uuid` char(36) UNIQUE NOT NULL," + "  `last_username` varchar(16) DEFAULT NULL" + ")";
+
 		try (Connection connection = corePool.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(stmt);
 			DatabaseManager.executeUpdate(statement);
@@ -69,16 +69,18 @@ public class ModularCore extends JavaPlugin {
 
 		PluginManager pluginManager = Bukkit.getPluginManager();
 
-		for (File file : moduleFolder.listFiles((f) -> f.getName().endsWith(".jar"))) {
+		for (File file : moduleFolder.listFiles(f -> f.getName().endsWith(".jar"))) {
 			try {
 				Plugin plugin = pluginManager.loadPlugin(file);
 
 				if (plugin instanceof ModularPlugin) {
 					PluginDescriptionFile description = plugin.getDescription();
-					getLogger().info(String.format("Loading ModularPlugin \"%s\". Version: %s", description.getName(),
-							description.getVersion()));
+					if (getLogger().isLoggable(Level.INFO)) {
+						getLogger().info(String.format("Loading ModularPlugin \"%s\". Version: %s",
+								description.getName(), description.getVersion()));
+					}
 
-					this.MODULES.add((ModularPlugin) plugin);
+					this.modules.add((ModularPlugin) plugin);
 				} else {
 					getLogger().warning("Found a valid plugin: " + plugin.getName()
 							+ " but it is not a valid module, it should be placed in your regular plugin folder.");
@@ -92,11 +94,11 @@ public class ModularCore extends JavaPlugin {
 	}
 
 	private void enableModules() {
-		this.MODULES.forEach((module) -> Bukkit.getPluginManager().enablePlugin(module));
+		this.modules.forEach(module -> Bukkit.getPluginManager().enablePlugin(module));
 
-		for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
-			if (plugin instanceof ModularPlugin) {
-				this.MODULES.add((ModularPlugin) plugin);
+		for (Plugin loadedPlugin : Bukkit.getPluginManager().getPlugins()) {
+			if (loadedPlugin instanceof ModularPlugin) {
+				this.modules.add((ModularPlugin) loadedPlugin);
 			}
 		}
 	}
@@ -110,7 +112,7 @@ public class ModularCore extends JavaPlugin {
 	}
 
 	public List<ModularPlugin> getModules() {
-		return this.MODULES;
+		return this.modules;
 	}
 
 	public DatabaseManager getDatabaseManager() {

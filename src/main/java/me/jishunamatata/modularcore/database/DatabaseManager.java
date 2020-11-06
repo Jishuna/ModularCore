@@ -2,6 +2,7 @@ package me.jishunamatata.modularcore.database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +27,7 @@ public class DatabaseManager {
 	public static int executeUpdate(ModularPlugin plugin, String stmt, Object... args) {
 		try (Connection connection = getConnection(plugin);
 				PreparedStatement statement = connection.prepareStatement(stmt);) {
-			int rows = executeUpdate(statement, args);
-
-			return rows;
+			return executeUpdate(statement, args);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return -1;
@@ -47,18 +46,17 @@ public class DatabaseManager {
 		}
 	}
 
-	public static CachedRowSet executeQuery(ModularPlugin plugin, String stmt, Object... args) {
+	public static ResultSet executeQuery(ModularPlugin plugin, String stmt, Object... args) {
 		try (Connection connection = getConnection(plugin);
 				PreparedStatement statement = connection.prepareStatement(stmt);) {
-			CachedRowSet result = executeQuery(statement, args);
-			return result;
+			return executeQuery(statement, args);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	public static CachedRowSet executeQuery(PreparedStatement statement, Object... args) {
+	public static ResultSet executeQuery(PreparedStatement statement, Object... args) {
 		try {
 			for (int i = 0; i < args.length; i++) {
 				statement.setObject(i + 1, args[i]);
