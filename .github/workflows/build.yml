@@ -1,4 +1,4 @@
-name: Build
+name: Analyze
 on:
   push:
     branches:
@@ -17,6 +17,13 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: Download Build Tools
+        uses: suisei-cn/actions-download-file@v1
+        with:
+          url: "https://hub.spigotmc.org/jenkins/job/BuildTools/lastBuild/artifact/target/BuildTools.jar"
+          target: buildtools/
+      - name: Run Build Tools
+        run: java -jar buildtools/BuildTools.jar -o buildtools --rev 1.16.4
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
