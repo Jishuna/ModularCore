@@ -1,6 +1,9 @@
 package me.jishunamatata.modularcore;
 
 import java.io.File;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +17,9 @@ import org.bukkit.plugin.UnknownDependencyException;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.jishunamatata.modularcore.commands.CoreCommandExecutor;
+import me.jishunamatata.modularcore.database.DatabaseConnectionPool;
 import me.jishunamatata.modularcore.database.DatabaseManager;
+import me.jishunamatata.modularcore.listeners.LoginListener;
 import me.jishunamatata.modularcore.utils.ModularPlugin;
 import me.jishunamatata.modularcore.utils.SimpleSemVersion;
 
@@ -26,6 +31,8 @@ public class ModularCore extends JavaPlugin {
 
 	private static final SimpleSemVersion CURRENT_VERSION = SimpleSemVersion.fromString("1.0.0");
 	private final List<ModularPlugin> MODULES = new ArrayList<>();
+	
+	private final DatabaseConnectionPool corePool = new DatabaseConnectionPool("CoreData");
 
 	public void onLoad() {
 		loadModules();
@@ -33,17 +40,26 @@ public class ModularCore extends JavaPlugin {
 
 	public void onEnable() {
 		plugin = this;
+		
+		PluginManager pluginManager = Bukkit.getPluginManager();
+		pluginManager.registerEvents(new LoginListener(corePool), this);
 
-		enableModules();
 		getCommand("modularcore").setExecutor(new CoreCommandExecutor(this));
 		
+		enableModules();
+		
 		String stmt = "CREATE TABLE IF NOT EXISTS `players` ("
-				+ "  `player_id` int PRIMARY KEY NOT NULL,"
+				+ "  `player_id` INTEGER PRIMARY KEY,"
 				+ "  `uuid` char(36) UNIQUE NOT NULL,"
 				+ "  `last_username` varchar(16) DEFAULT NULL"
 				+ ")";
 		
-		DatabaseManager.executeUpdate(this, stmt, DatabaseManager.getCoreConnection(), true);
+		try (Connection connection = corePool.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(stmt);
+			DatabaseManager.executeUpdate(statement);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void loadModules() {

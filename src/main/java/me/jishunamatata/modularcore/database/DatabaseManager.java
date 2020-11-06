@@ -10,34 +10,24 @@ import javax.sql.rowset.CachedRowSet;
 import javax.sql.rowset.RowSetFactory;
 import javax.sql.rowset.RowSetProvider;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 import me.jishunamatata.modularcore.ModularCore;
 import me.jishunamatata.modularcore.utils.ModularPlugin;
 
 public class DatabaseManager {
 
-	private DatabaseConnectionPool corePool = new DatabaseConnectionPool();
-	private Map<ModularPlugin, DatabaseConnectionPool> databasePoolMap = new HashMap<>();
-
-	public static Connection getCoreConnection() {
-		return ModularCore.getInstance().getDatabaseManager().corePool.getConnection(ModularCore.getInstance());
-	}
+	private Map<ModularPlugin, DatabaseConnectionPool> connectionPoolMap = new HashMap<>();
 
 	public static Connection getConnection(ModularPlugin plugin) {
-		DatabaseConnectionPool pool = ModularCore.getInstance().getDatabaseManager().databasePoolMap
-				.computeIfAbsent(plugin, k -> new DatabaseConnectionPool());
-		return pool.getConnection(plugin);
+		DatabaseConnectionPool pool = ModularCore.getInstance().getDatabaseManager().connectionPoolMap
+				.computeIfAbsent(plugin, k -> new DatabaseConnectionPool(plugin.getName()));
+		return pool.getConnection();
 	}
 
-	public static int executeUpdate(JavaPlugin plugin, String stmt, Connection connection, boolean closeConnection,
-			Object... args) {
+	public static int executeUpdate(ModularPlugin plugin, String stmt, Object... args) {
+		try (Connection connection = getConnection(plugin);
+				PreparedStatement statement = connection.prepareStatement(stmt);) {
+			int rows = executeUpdate(statement, args);
 
-		try (connection; PreparedStatement statement = connection.prepareStatement(stmt);) {
-			int rows = executeUpdate(plugin, statement, args);
-			if (closeConnection) {
-				connection.close();
-			}
 			return rows;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -45,7 +35,7 @@ public class DatabaseManager {
 		}
 	}
 
-	public static int executeUpdate(JavaPlugin plugin, PreparedStatement statement, Object... args) {
+	public static int executeUpdate(PreparedStatement statement, Object... args) {
 		try {
 			for (int i = 0; i < args.length; i++) {
 				statement.setObject(i + 1, args[i]);
@@ -57,13 +47,10 @@ public class DatabaseManager {
 		}
 	}
 
-	public static CachedRowSet executeQuery(JavaPlugin plugin, String stmt, Connection connection,
-			boolean closeConnection, Object... args) {
-		try (connection; PreparedStatement statement = connection.prepareStatement(stmt);) {
-			CachedRowSet result = executeQuery(plugin, statement, args);
-			if (closeConnection) {
-				connection.close();
-			}
+	public static CachedRowSet executeQuery(ModularPlugin plugin, String stmt, Object... args) {
+		try (Connection connection = getConnection(plugin);
+				PreparedStatement statement = connection.prepareStatement(stmt);) {
+			CachedRowSet result = executeQuery(statement, args);
 			return result;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -71,7 +58,7 @@ public class DatabaseManager {
 		}
 	}
 
-	public static CachedRowSet executeQuery(JavaPlugin plugin, PreparedStatement statement, Object... args) {
+	public static CachedRowSet executeQuery(PreparedStatement statement, Object... args) {
 		try {
 			for (int i = 0; i < args.length; i++) {
 				statement.setObject(i + 1, args[i]);

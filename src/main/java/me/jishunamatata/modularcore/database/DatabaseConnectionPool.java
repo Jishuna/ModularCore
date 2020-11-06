@@ -4,13 +4,17 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.bukkit.plugin.Plugin;
-
 import com.zaxxer.hikari.HikariDataSource;
 
 import me.jishunamatata.modularcore.ModularCore;
 
 public class DatabaseConnectionPool {
+	
+	private String name;
+	
+	public DatabaseConnectionPool(String name) {
+		this.name = name;
+	}
 
 	private HikariDataSource ds = null;
 
@@ -20,9 +24,9 @@ public class DatabaseConnectionPool {
 		}
 	}
 
-	public Connection getConnection(Plugin plugin) {
+	public Connection getConnection() {
 		if (this.ds == null) {
-			String name = plugin.getDescription().getName();
+
 			File dataDir = new File(ModularCore.getInstance().getDataFolder().getAbsolutePath() + "/data");
 
 			if (!dataDir.exists()) {
